@@ -17,7 +17,7 @@ Move files / folders accordingly.
 Also ensure the folder names are correct.
 Your folder structure should be similar to this.
 
-```
+```javascript
 resources/
 └── postgres-wrapper/
     ├── client.mjs
@@ -35,13 +35,13 @@ resources/
 
 If you haven't setup a package.json yet; please do so.
 
-```
+```javascript
 npm init
 ```
 
 After setting up your project structure you need to install two npm packages.
 
-```
+```javascript
 npm install --save mysql
 npm install --save typeorm
 ```
@@ -52,7 +52,7 @@ You'll need to adjust your import according to your resource setup.
 
 **Example entities.mjs**
 
-```
+```javascript
 import orm from 'typeorm';
 
 export const Account = new orm.EntitySchema({
@@ -75,7 +75,7 @@ export const Account = new orm.EntitySchema({
 
 **Example Database Usage for Postgres**
 
-```
+```javascript
 import * as alt from 'alt';
 import SQL from '../../postgres-wrapper/database.mjs';
 import { Account } from './entities/entities.mjs';
@@ -84,7 +84,9 @@ import { Account } from './entities/entities.mjs';
 // The database connection string goes as follows for postgres
 // postgresql://username:password@localhost:5423/databaseName
 
-var database = new SQL('postgresql://postgres:abc123@localhost:5432/altv', [Account]);
+var database = new SQL('postgresql://postgres:abc123@localhost:5432/altv', [
+    Account
+]);
 
 // This is an event called when the database is connected.
 // You don't need to use this; but it helps understand the current state of the db connection.
