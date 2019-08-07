@@ -11,18 +11,13 @@ import orm from 'typeorm';
 	]
 */
 
+var currentConnection = undefined;
+
 // Singleton Connection Info
 export default class ConnectionInfo {
     constructor(connectionString, entityArray) {
-        if (!connectionString || !Array.isArray(entityArray)) {
-            console.error(
-                `!===> Error - connectionString or entityArray is not an array of EntitySchema.`
-            );
-            return;
-        }
-
         // If instance does not exist.
-        if (!ConnectionInfo.instance) {
+        if (currentConnection === undefined) {
             console.log(`@===> Starting Database Connection`);
             // Configuration Template
             this.config = {
@@ -35,9 +30,8 @@ export default class ConnectionInfo {
             orm.createConnection(this.config)
                 .then(conn => {
                     this.connection = conn;
-                    ConnectionInfo.instance = this;
+                    currentConnection = this;
                     console.log('@===> Database is connected.');
-                    Object.freeze(ConnectionInfo.instance);
                     alt.emit('ConnectionComplete');
                 })
                 .catch(err => {
@@ -46,7 +40,7 @@ export default class ConnectionInfo {
                 });
         }
 
-        return ConnectionInfo.instance;
+        return currentConnection;
     }
 
     /**
