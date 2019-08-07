@@ -44,6 +44,7 @@ After setting up your project structure you need to install two npm packages.
 ```javascript
 npm install --save mysql
 npm install --save typeorm
+npm install --save pg
 ```
 
 ### Example Usage
