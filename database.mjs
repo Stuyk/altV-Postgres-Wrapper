@@ -1,5 +1,4 @@
 import * as alt from 'alt';
-import pg from 'pg';
 import orm from 'typeorm';
 
 // Example Connection String
@@ -15,15 +14,18 @@ var currentConnection = undefined;
 
 // Singleton Connection Info
 export default class ConnectionInfo {
-    constructor(connectionString, entityArray) {
+    constructor(dbType, dbHost, dbPort, dbUsername, dbPassword, dbName, entityArray) {
         // If instance does not exist.
         if (currentConnection === undefined) {
             console.log(`@===> Starting Database Connection`);
             // Configuration Template
             this.config = {
-                type: 'postgres',
-                synchronize: true,
-                url: connectionString,
+		type: `${dbType}`,
+		host: `${dbHost}`,
+		port: dbPort,
+		username: `${dbUsername}`,
+		password: `${dbPassword}`,
+		database: `${dbName}`,
                 entities: entityArray
             };
 
