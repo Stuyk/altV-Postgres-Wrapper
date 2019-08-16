@@ -14,24 +14,33 @@ var currentConnection = undefined;
 
 // Singleton Connection Info
 export default class ConnectionInfo {
-    constructor(dbType, dbHost, dbPort, dbUsername, dbPassword, dbName, entityArray) {
+    constructor(
+        dbType,
+        dbHost,
+        dbPort,
+        dbUsername,
+        dbPassword,
+        dbName,
+        entityArray
+    ) {
         // If instance does not exist.
         if (currentConnection === undefined) {
             console.log(`@===> Starting Database Connection`);
             // Configuration Template
             this.config = {
-		type: `${dbType}`,
-		host: `${dbHost}`,
-		port: dbPort,
-		username: `${dbUsername}`,
-		password: `${dbPassword}`,
-		database: `${dbName}`,
+                type: `${dbType}`,
+                host: `${dbHost}`,
+                port: dbPort,
+                username: `${dbUsername}`,
+                password: `${dbPassword}`,
+                database: `${dbName}`,
                 entities: entityArray
             };
 
             orm.createConnection(this.config)
                 .then(conn => {
                     this.connection = conn;
+                    conn.synchronize();
                     currentConnection = this;
                     console.log('@===> Database is connected.');
                     alt.emit('ConnectionComplete');
