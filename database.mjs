@@ -1,5 +1,4 @@
 import * as alt from 'alt';
-import pg from 'pg';
 import orm from 'typeorm';
 
 // Example Connection String
