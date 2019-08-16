@@ -1,4 +1,4 @@
-# alt:V - Postgres Wrapper with Type ORM
+# alt:V - Database Wrapper with Type ORM
 
 ---
 
