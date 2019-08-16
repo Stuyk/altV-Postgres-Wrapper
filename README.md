@@ -84,8 +84,16 @@ import { Account } from './entities/entities.mjs';
 // Each Database Schema you create will need to be added to the array after your connection string.
 // The database connection string goes as follows for postgres
 // postgresql://username:password@localhost:5423/databaseName
+const dbType = 'postgres';
+const dbHost = 'localhost';
+const dbPort = '5423';
+const dbUsername = 'postgres';
+const dbPassword = 'abc123';
+const dbName = 'altv';
 
-var database = new SQL('postgresql://postgres:abc123@localhost:5432/altv', [
+// Must be in this specific order.
+// dbType, dbHost, dbPort, dbUsername, dbPassword, dbName, entityArray
+var database = new SQL(dbType, dbHost, dbPort, dbUsername, dbPassword, dbName, [
     Account
 ]);
 
