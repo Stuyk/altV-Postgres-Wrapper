@@ -31,10 +31,12 @@ export default class ConnectionInfo {
             orm.createConnection(config)
                 .then(conn => {
                     this.connection = conn;
-                    conn.synchronize();
-                    currentConnection = this;
-                    console.log('---> Database Connected Successfully');
-                    alt.emit('ConnectionComplete');
+                    conn.synchronize().then(res => {
+                        currentConnection = this;
+                        console.log('---> Database Connected Successfully');
+                        alt.emit('ConnectionComplete');
+                        return currentConnection;
+                    });
                 })
                 .catch(err => {
                     console.log(err);
@@ -77,6 +79,47 @@ export default class ConnectionInfo {
             const repo = this.connection.getRepository(repoName);
 
             repo.findOne({ where: { [fieldName]: fieldValue } })
+                .then(res => {
+                    return resolve(res);
+                })
+                .catch(err => {
+                    console.error(err);
+                    return reject(undefined);
+                });
+        });
+    }
+
+    /**
+     *
+     * @param fieldName The name of the field.
+     * @param fieldValue The value of that field.
+     * @param repoName The reponame where to look.
+     * @param callback Result is an array or undefined.
+     */
+    fetchAllByField(fieldName, fieldValue, repoName, callback) {
+        const repo = this.connection.getRepository(repoName);
+
+        repo.find({ where: { [fieldName]: fieldValue } })
+            .then(res => {
+                return callback(res);
+            })
+            .catch(err => {
+                console.error(err);
+                return callback(undefined);
+            });
+    }
+
+    /**
+     *
+     * @param fieldName The name of the field.
+     * @param fieldValue The value of that field.
+     * @param repoName The reponame where to look.
+     */
+    async fetchAllByFieldAsync(fieldName, fieldValue, repoName) {
+        return new Promise((resolve, reject) => {
+            const repo = this.connection.getRepository(repoName);
+
+            repo.find({ where: { [fieldName]: fieldValue } })
                 .then(res => {
                     return resolve(res);
                 })
