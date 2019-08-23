@@ -229,7 +229,7 @@ export default class ConnectionInfo {
                         return callback(res);
                     })
                     .catch(err => {
-                        console.err(err);
+                        console.error(err);
                         return callback(undefined);
                     });
             })
@@ -367,7 +367,7 @@ export default class ConnectionInfo {
                     return resolve(res);
                 })
                 .catch(err => {
-                    console.err(err);
+                    console.error(err);
                     return reject(undefined);
                 });
         });
@@ -406,7 +406,7 @@ export default class ConnectionInfo {
                     return resolve(res);
                 })
                 .catch(err => {
-                    console.err(err);
+                    console.error(err);
                     return reject(undefined);
                 });
         });
