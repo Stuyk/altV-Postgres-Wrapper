@@ -1,7 +1,7 @@
 import * as alt from 'alt';
 import orm from 'typeorm';
 
-var currentConnection = undefined;
+var currentConnection;
 
 // Singleton Connection Info
 export default class ConnectionInfo {
@@ -24,7 +24,8 @@ export default class ConnectionInfo {
                 username: `${dbUsername}`,
                 password: `${dbPassword}`,
                 database: `${dbName}`,
-                entities: entityArray
+                entities: entityArray,
+                cache: true
             };
 
             console.log(`---> Starting Database Connection`);
@@ -56,7 +57,6 @@ export default class ConnectionInfo {
      */
     fetchData(fieldName, fieldValue, repoName, callback) {
         const repo = this.connection.getRepository(repoName);
-
         repo.findOne({ where: { [fieldName]: fieldValue } })
             .then(res => {
                 return callback(res);
@@ -86,6 +86,13 @@ export default class ConnectionInfo {
                     console.error(err);
                     return reject(undefined);
                 });
+        });
+    }
+
+    fetchLastId(repoName, callback) {
+        const repo = this.connection.getRepository(repoName);
+        repo.findOne({order: {id: "DESC"}}).then(res => {
+            callback(res);
         });
     }
 
