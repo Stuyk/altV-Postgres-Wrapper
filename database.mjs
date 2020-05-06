@@ -253,27 +253,29 @@ export default class ConnectionInfo {
      * @param partialObjectData Object
      * @param repoName The name of the table.
      */
-    updatePartialDataAsync(id, partialObjectData, repoName) {
-        const repo = this.connection.getRepository(repoName);
+    async updatePartialDataAsync(id, partialObjectData, repoName) {
+        return new Promise((resolve, reject) => {
+            const repo = this.connection.getRepository(repoName);
 
-        repo.findByIds([id])
-            .then(res => {
-                if (res.length <= 0) return callback(undefined);
-                // Results after this.
+            repo.findByIds([id])
+                .then(res => {
+                    if (res.length <= 0) return resolve(undefined);
+                    // Results after this.
 
-                repo.update(id, partialObjectData)
-                    .then(res => {
-                        return callback(res);
-                    })
-                    .catch(err => {
-                        console.err(err);
-                        return callback(undefined);
-                    });
-            })
-            .catch(err => {
-                console.error(err);
-                return callback(undefined);
-            });
+                    repo.update(id, partialObjectData)
+                        .then(res => {
+                            return resolve(res);
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            return reject(undefined);
+                        });
+                })
+                .catch(err => {
+                    console.error(err);
+                    return reject(undefined);
+                });
+        });
     }
 
     /**
