@@ -314,19 +314,4 @@ export default class ConnectionInfo {
 
         return results;
     }
-
-    /**
-     * Truncate Repo
-     * Select a table and clear it
-     * @param repoName
-     * @param fieldNamesArray
-     */
-    truncateTable(repoName) {
-        console.log('--->', repoName, ' was Truncated Successfully');
-        const repo = this.connection.getRepository(repoName);
-
-        if (repoName == 'reports') {
-            repo.clear();
-        }
-    }
 }
