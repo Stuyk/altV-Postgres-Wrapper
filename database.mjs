@@ -5,15 +5,7 @@ var currentConnection;
 
 // Singleton Connection Info
 export default class ConnectionInfo {
-    constructor(
-        dbType,
-        dbHost,
-        dbPort,
-        dbUsername,
-        dbPassword,
-        dbName,
-        entityArray
-    ) {
+    constructor(dbType, dbHost, dbPort, dbUsername, dbPassword, dbName, entityArray) {
         // If instance does not exist.
         if (currentConnection === undefined) {
             // Configuration Template
@@ -25,21 +17,21 @@ export default class ConnectionInfo {
                 password: `${dbPassword}`,
                 database: `${dbName}`,
                 entities: entityArray,
-                cache: true
+                cache: true,
             };
 
             console.log(`---> Starting Database Connection`);
             orm.createConnection(config)
-                .then(conn => {
+                .then((conn) => {
                     this.connection = conn;
-                    conn.synchronize().then(res => {
+                    conn.synchronize().then((res) => {
                         currentConnection = this;
                         console.log('---> Database Connected Successfully');
                         alt.emit('ConnectionComplete');
                         return currentConnection;
                     });
                 })
-                .catch(err => {
+                .catch((err) => {
                     console.log(err);
                     throw err;
                 });
@@ -55,45 +47,20 @@ export default class ConnectionInfo {
      * @param repoName ie. "Account"
      * @param callback undefined | document
      */
-    fetchData(fieldName, fieldValue, repoName, callback) {
+    async fetchData(fieldName, fieldValue, repoName) {
         const repo = this.connection.getRepository(repoName);
-        repo.findOne({ where: { [fieldName]: fieldValue } })
-            .then(res => {
-                return callback(res);
-            })
-            .catch(err => {
-                console.error(err);
-                return callback(undefined);
-            });
+        return await repo.findOne({ where: { [fieldName]: fieldValue } }).catch((err) => {
+            return null;
+        });
     }
 
     /**
-     * Async Version
-     * Look up a document by the fieldName and fieldValue in a repo by name.
-     * @param fieldName String of the field name.
-     * @param fieldValue String of the field value.
-     * @param repoName ie. "Account"
+     * @param  {} repoName
+     * @param  {} callback
      */
-    async fetchDataAsync(fieldName, fieldValue, repoName) {
-        return new Promise((resolve, reject) => {
-            const repo = this.connection.getRepository(repoName);
-
-            repo.findOne({ where: { [fieldName]: fieldValue } })
-                .then(res => {
-                    return resolve(res);
-                })
-                .catch(err => {
-                    console.error(err);
-                    return reject(undefined);
-                });
-        });
-    }
-
-    fetchLastId(repoName, callback) {
+    async fetchLastId(repoName) {
         const repo = this.connection.getRepository(repoName);
-        repo.findOne({order: {id: "DESC"}}).then(res => {
-            callback(res);
-        });
+        return await repo.findOne({ order: { id: 'DESC' } });
     }
 
     /**
@@ -103,117 +70,44 @@ export default class ConnectionInfo {
      * @param repoName The reponame where to look.
      * @param callback Result is an array or undefined.
      */
-    fetchAllByField(fieldName, fieldValue, repoName, callback) {
+    async fetchAllByField(fieldName, fieldValue, repoName) {
         const repo = this.connection.getRepository(repoName);
-
-        repo.find({ where: { [fieldName]: fieldValue } })
-            .then(res => {
-                return callback(res);
-            })
-            .catch(err => {
-                console.error(err);
-                return callback(undefined);
-            });
-    }
-
-    /**
-     *
-     * @param fieldName The name of the field.
-     * @param fieldValue The value of that field.
-     * @param repoName The reponame where to look.
-     */
-    async fetchAllByFieldAsync(fieldName, fieldValue, repoName) {
-        return new Promise((resolve, reject) => {
-            const repo = this.connection.getRepository(repoName);
-
-            repo.find({ where: { [fieldName]: fieldValue } })
-                .then(res => {
-                    return resolve(res);
-                })
-                .catch(err => {
-                    console.error(err);
-                    return reject(undefined);
-                });
+        const results = await repo.find({ where: { [fieldName]: fieldValue } }).catch((err) => {
+            console.log(err);
+            return [];
         });
+
+        return results;
     }
 
     /**
      * Update or Insert a new document.
      * @param document Document pulled down from table.
      * @param repoName The name of the table.
-     * @param callback Returns Updated/Inserted document with id or UNDEFINED.
      */
-    upsertData(document, repoName, callback) {
+    async upsertData(document, repoName) {
         const repo = this.connection.getRepository(repoName);
-
-        repo.save(document)
-            .then(res => {
-                return callback(res);
-            })
-            .catch(err => {
-                console.error(err);
-                return callback(undefined);
-            });
-    }
-
-    /**
-     * Async Version
-     * Update or Insert a new document.
-     * @param document Document pulled down from table.
-     * @param repoName The name of the table.
-     */
-    async upsertDataAsync(document, repoName) {
-        return new Promise((resolve, reject) => {
-            const repo = this.connection.getRepository(repoName);
-
-            repo.save(document)
-                .then(res => {
-                    return resolve(res);
-                })
-                .catch(err => {
-                    console.error(err);
-                    return reject(undefined);
-                });
+        const result = await repo.save(document).catch((err) => {
+            console.log(err);
+            return undefined;
         });
+
+        return result;
     }
 
     /**
-     * Update or Insert a new document.
-     * @param document Document pulled down from table.
-     * @param repoName The name of the table.
-     * @param callback Returns Updated/Inserted document with id.
+     * Insert a new document directly into the database.
+     * @param {{}} document
+     * @param {String} repoName
      */
-    insertData(document, repoName, callback) {
+    async insertData(document, repoName) {
         const repo = this.connection.getRepository(repoName);
-
-        repo.insert(document)
-            .then(res => {
-                return callback(res);
-            })
-            .catch(err => {
-                console.error(err);
-                return callback(undefined);
-            });
-    }
-
-    /**
-     * Async Version
-     * @param document Document pulled down from table.
-     * @param repoName The name of the table.
-     */
-    async insertDataAsync(document, repoName) {
-        return new Promise((resolve, reject) => {
-            const repo = this.connection.getRepository(repoName);
-
-            repo.insert(document)
-                .then(res => {
-                    return resolve(res);
-                })
-                .catch(err => {
-                    console.error(err);
-                    return reject(undefined);
-                });
+        const result = await repo.insert(document).catch((err) => {
+            console.log(err);
+            return undefined;
         });
+
+        return result;
     }
 
     /**
@@ -227,20 +121,20 @@ export default class ConnectionInfo {
         const repo = this.connection.getRepository(repoName);
 
         repo.findByIds([id])
-            .then(res => {
+            .then((res) => {
                 if (res.length <= 0) return callback(undefined);
                 // Results after this.
 
                 repo.update(id, partialObjectData)
-                    .then(res => {
+                    .then((res) => {
                         return callback(res);
                     })
-                    .catch(err => {
+                    .catch((err) => {
                         console.error(err);
                         return callback(undefined);
                     });
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error(err);
                 return callback(undefined);
             });
@@ -257,20 +151,20 @@ export default class ConnectionInfo {
         const repo = this.connection.getRepository(repoName);
 
         repo.findByIds([id])
-            .then(res => {
+            .then((res) => {
                 if (res.length <= 0) return callback(undefined);
                 // Results after this.
 
                 repo.update(id, partialObjectData)
-                    .then(res => {
+                    .then((res) => {
                         return callback(res);
                     })
-                    .catch(err => {
+                    .catch((err) => {
                         console.err(err);
                         return callback(undefined);
                     });
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error(err);
                 return callback(undefined);
             });
@@ -291,11 +185,11 @@ export default class ConnectionInfo {
         }
 
         repo.findByIds(idRef)
-            .then(res => {
+            .then((res) => {
                 if (res.length <= 0) return callback(undefined);
                 return callback(res);
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error(err);
                 return callback(undefined);
             });
@@ -317,11 +211,11 @@ export default class ConnectionInfo {
             }
 
             repo.findByIds(idRef)
-                .then(res => {
+                .then((res) => {
                     if (res.length <= 0) return callback(undefined);
                     return resolve(res);
                 })
-                .catch(err => {
+                .catch((err) => {
                     console.error(err);
                     return reject(undefined);
                 });
@@ -344,10 +238,10 @@ export default class ConnectionInfo {
         }
 
         repo.delete(idRef)
-            .then(res => {
+            .then((res) => {
                 return callback(res);
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error(err);
                 return callback(undefined);
             });
@@ -370,10 +264,10 @@ export default class ConnectionInfo {
             }
 
             repo.delete(idRef)
-                .then(res => {
+                .then((res) => {
                     return resolve(res);
                 })
-                .catch(err => {
+                .catch((err) => {
                     console.error(err);
                     return reject(undefined);
                 });
@@ -389,34 +283,14 @@ export default class ConnectionInfo {
         const repo = this.connection.getRepository(repoName);
 
         repo.find()
-            .then(res => {
+            .then((res) => {
                 if (res.length <= 0) return callback(undefined);
                 return callback(res);
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error(err);
                 return callback(undefined);
             });
-    }
-
-    /**
-     * Fetch all documents by repo name.
-     * @param repoName The name of the table.
-     */
-    fetchAllDataAsync(repoName) {
-        return new Promise((resolve, reject) => {
-            const repo = this.connection.getRepository(repoName);
-
-            repo.find()
-                .then(res => {
-                    if (res.length <= 0) return reject(undefined);
-                    return resolve(res);
-                })
-                .catch(err => {
-                    console.error(err);
-                    return reject(undefined);
-                });
-        });
     }
 
     /**
@@ -425,51 +299,34 @@ export default class ConnectionInfo {
      * @param fieldNamesArray
      * @param callback Returns undefined | Array of documents
      */
-    selectData(repoName, fieldNamesArray, callback) {
+    async selectData(repoName, fieldNamesArray) {
         const repo = this.connection.getRepository(repoName);
-
         let selectionRef = fieldNamesArray;
 
         if (!Array.isArray(fieldNamesArray)) {
             selectionRef = [selectionRef];
         }
 
-        repo.find({ select: selectionRef })
-            .then(res => {
-                if (res.length <= 0) return callback(undefined);
-                return callback(res);
-            })
-            .catch(err => {
-                console.error(err);
-                return callback(undefined);
-            });
+        const results = await repo.find({ select: selectionRef }).catch((err) => {
+            console.log(err);
+            return [];
+        });
+
+        return results;
     }
 
     /**
-     * Async Version
-     * Select a table by fieldNames that apply.
+     * Truncate Repo
+     * Select a table and clear it
      * @param repoName
      * @param fieldNamesArray
      */
-    async selectDataAsync(repoName, fieldNamesArray) {
-        return new Promise((resolve, reject) => {
-            const repo = this.connection.getRepository(repoName);
+    truncateTable(repoName) {
+        console.log('--->', repoName, ' was Truncated Successfully');
+        const repo = this.connection.getRepository(repoName);
 
-            let selectionRef = fieldNamesArray;
-
-            if (!Array.isArray(fieldNamesArray)) {
-                selectionRef = [selectionRef];
-            }
-
-            repo.find({ select: selectionRef })
-                .then(res => {
-                    if (res.length <= 0) return reject(undefined);
-                    return resolve(res);
-                })
-                .catch(err => {
-                    console.error(err);
-                    return reject(undefined);
-                });
-        });
+        if (repoName == 'reports') {
+            repo.clear();
+        }
     }
 }
