@@ -122,8 +122,5 @@ alt.on('ConnectionComplete', () => {
             return;
         }
     }
-    
-    
-
 });
 ```
