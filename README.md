@@ -47,6 +47,19 @@ npm install --save typeorm
 npm install --save pg
 ```
 
+### Establishing a Database Connection
+You need to establish a connection the the main database.js file, you can do this by scrolling to the bottom of the file and editing the following. The `Entity Export Name` must match the name that is imported at the top of the file so if you have `Account` imported from your entities file at the top of the database file, then you need to have `Account` in `ConnectionInfo` array
+
+```
+dbType, dbHost, dbPort, dbUsername, dbPassword, dbName, entityArray
+```
+
+```js
+export default new ConnectionInfo('mysql', '127.0.0.1', 3306, 'root', '', 'economy', [
+    Account,
+]);
+```
+
 ### Example Usage
 
 You'll need to adjust your import according to your resource setup.
@@ -72,100 +85,45 @@ export const Account = new orm.EntitySchema({
         }
     }
 });
+
 ```
 
 **Example Database Usage for Postgres**
+You need to establish a connection the the main database.js file, you can do this by scrolling to the bottom of the file and editing the following:@
 
 ```javascript
 import * as alt from 'alt';
-import SQL from '../../postgres-wrapper/database.mjs';
-import { Account } from './entities/entities.mjs';
-
-// Each Database Schema you create will need to be added to the array after your connection string.
-// The database connection string goes as follows for postgres
-// postgresql://username:password@localhost:5423/databaseName
-const dbType = 'postgres';
-const dbHost = 'localhost';
-const dbPort = '5423';
-const dbUsername = 'postgres';
-const dbPassword = 'abc123';
-const dbName = 'altv';
-
-// Must be in this specific order.
-// dbType, dbHost, dbPort, dbUsername, dbPassword, dbName, entityArray
-var database = new SQL(dbType, dbHost, dbPort, dbUsername, dbPassword, dbName, [
-    Account
-]);
+import db from 'PATH TO DATABASE.js';
 
 // This is an event called when the database is connected.
 // You don't need to use this; but it helps understand the current state of the db connection.
 alt.on('ConnectionComplete', () => {
-    var Account = {
+    const accountDocument = {
         username: 'stuyk',
         password: '123'
     };
+    
+    async function handleLogin(player, username, password) {
+    
+        // Fetch all data by field
+        // (field name, field value, repo name)
+        const usernames = await db.fetchAllByField('username', username, 'Account');
+        if (usernames.length >= 1) {
+            alt.emitClient(player, 'register:SetError', `Username is already in use.`);
+            return;
+        }
 
-    // Update or Insert a new document.
-    database.upsertData(Account, 'Account', result => {
-        // Fetch data by field name, field value, and repo name.
-        database.fetchData('username', 'stuyk', 'Account', res => {
-            if (res === undefined) {
-                console.log('This user was not found.');
-                return;
-            }
 
-            console.log(res);
-        });
+        // Insert a Document to Database
+        // (field value, repo name)
+        const accountData = await db.insertData(accountDocument, 'Account');
+        if (!accountData) {
+            console.log("There was an error sending information to the datavase")
+            return;
+        }
+    }
+    
+    
 
-        // Fetch a document by ID.
-        database.fetchByIds(1, 'Account', res => {
-            if (res === undefined) {
-                console.log('The document with the id was not found.');
-                return;
-            }
-
-            console.log('Fetched Document for ID: ' + res[0].id);
-            console.log(res[0]);
-
-            // The result is going to be an array if it finds the document.
-            // If you're expecting 1 result. Then use call [0] on res.
-            console.log('Attempting to Update Data...');
-            database.updatePartialData(
-                res[0].id,
-                { username: 'NewUsername' },
-                'Account',
-                res => {
-                    // Will return an object if successfull.
-                    if (typeof res !== 'object') {
-                        console.log('Failed to find and update document.');
-                        return;
-                    }
-
-                    console.log('Updated Successfully');
-                }
-            );
-        });
-
-        // Returns an array of all documents with all data.
-        // If no documents exist; it'll be undefined.
-        database.fetchAllData('Account', res => {
-            console.log('Fetched all documents for table ACCOUNT');
-            console.log(res);
-        });
-
-        // Selects all data and returns just usernames.
-        database.selectData('Account', ['username'], res => {
-            console.log('Selected by USERNAME');
-            console.log(res);
-        });
-
-        // Delete by ID
-        setTimeout(() => {
-            database.deleteByIds(1, 'Account', res => {
-                console.log('Deleted ID 1');
-                console.log(res);
-            });
-        }, 5000);
-    });
 });
 ```
