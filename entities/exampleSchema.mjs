@@ -1,18 +1,22 @@
-import orm from 'typeorm';
-
-export default new orm.EntitySchema({
+export const Account = new orm.EntitySchema({
     name: 'Account',
     columns: {
         id: {
             primary: true,
             type: 'int',
-            generated: true
+            generated: true,
         },
         username: {
-            type: 'varchar'
+            type: 'text',
+            nullable: false,
+        },
+        email: {
+            type: 'text',
+            nullable: false,
         },
         password: {
-            type: 'varchar'
-        }
-    }
+            type: 'text',
+            nullable: false,
+        },
+    },
 });
