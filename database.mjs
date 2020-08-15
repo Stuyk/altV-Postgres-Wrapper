@@ -1,6 +1,6 @@
 import * as alt from 'alt';
 import orm from 'typeorm';
-import { EntityExportName, EntityExportName2, etc. } from '../entities/entities';
+import { Account } from '../entities/entities';
 
 // Singleton Connection Info
 class ConnectionInfo {
