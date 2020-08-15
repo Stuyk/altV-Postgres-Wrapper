@@ -15,7 +15,7 @@ export const Account = new orm.EntitySchema({
             nullable: false,
         },
         password: {
-            type: 'text',
+            type: 'varchar',
             nullable: false,
         },
     },
