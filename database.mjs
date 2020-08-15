@@ -1,43 +1,35 @@
 import * as alt from 'alt';
 import orm from 'typeorm';
-
-var currentConnection;
+import { Account, Character, Reports, Kicks, Bans, Config } from '../entities/entities';
 
 // Singleton Connection Info
-export default class ConnectionInfo {
+class ConnectionInfo {
     constructor(dbType, dbHost, dbPort, dbUsername, dbPassword, dbName, entityArray) {
-        // If instance does not exist.
-        if (currentConnection === undefined) {
-            // Configuration Template
-            const config = {
-                type: `${dbType}`,
-                host: `${dbHost}`,
-                port: dbPort,
-                username: `${dbUsername}`,
-                password: `${dbPassword}`,
-                database: `${dbName}`,
-                entities: entityArray,
-                cache: true,
-            };
+        // Configuration Template
+        const config = {
+            type: `${dbType}`,
+            host: `${dbHost}`,
+            port: dbPort,
+            username: `${dbUsername}`,
+            password: `${dbPassword}`,
+            database: `${dbName}`,
+            entities: entityArray,
+            cache: true,
+        };
 
-            console.log(`---> Starting Database Connection`);
-            orm.createConnection(config)
-                .then((conn) => {
-                    this.connection = conn;
-                    conn.synchronize().then((res) => {
-                        currentConnection = this;
-                        console.log('---> Database Connected Successfully');
-                        alt.emit('ConnectionComplete');
-                        return currentConnection;
-                    });
-                })
-                .catch((err) => {
-                    console.log(err);
-                    throw err;
+        console.log(`---> Starting Database Connection`);
+        orm.createConnection(config)
+            .then((conn) => {
+                this.connection = conn;
+                conn.synchronize().then((res) => {
+                    console.log('---> Database Connected Successfully');
+                    alt.emit('ConnectionComplete');
                 });
-        }
-
-        return currentConnection;
+            })
+            .catch((err) => {
+                console.log(err);
+                throw err;
+            });
     }
 
     /**
@@ -314,4 +306,25 @@ export default class ConnectionInfo {
 
         return results;
     }
+
+    /**
+     * Truncate Repo
+     * Select a table and clear it
+     * @param repoName
+     * @param fieldNamesArray
+     */
+    truncateTable(repoName) {
+        console.log('--->', repoName, ' was Truncated Successfully');
+        const repo = this.connection.getRepository(repoName);
+
+        if (repoName == 'reports') {
+            repo.clear();
+        }
+    }
 }
+
+export default new ConnectionInfo('mysql', '127.0.0.1', 3306, 'root', '', 'economy', [
+    Entity Export Name,
+    Entity Export Name,
+    etc.
+]);
