@@ -89,10 +89,39 @@ export default class ConnectionInfo {
         });
     }
 
+    /**
+     * Look up document with the highest id in repo
+     * @param repoName ie "Account"
+     * @param callback undefined | document
+     */
     fetchLastId(repoName, callback) {
         const repo = this.connection.getRepository(repoName);
-        repo.findOne({order: {id: "DESC"}}).then(res => {
-            callback(res);
+        repo.findOne({order: {id: "DESC"}})
+            .then(res => {
+                callback(res);
+            })
+            .catch(err => {
+                console.log(err);
+                callback(undefined);
+            });
+    }
+
+    /**
+     * Async Version
+     * Look up document with the highest id in repo.
+     * @param repoName ie "Account"
+     */
+    async fetchLastIdAsync(repoName) {
+        return new Promise((resolve, reject) => {
+            const repo = this.connection.getRepository(repoName);
+            repo.findOne({order: {id: "DESC"}})
+                .then(res => {
+                    return resolve(res);
+                })
+                .catch(err => {
+                    console.log(err);
+                    return reject(undefined);
+                });
         });
     }
 
@@ -247,33 +276,35 @@ export default class ConnectionInfo {
     }
 
     /**
-     * Async
+     * Async Version
      * Update partial data for a document; based on object data based.
      * @param id ID of Document
      * @param partialObjectData Object
      * @param repoName The name of the table.
      */
-    updatePartialDataAsync(id, partialObjectData, repoName) {
-        const repo = this.connection.getRepository(repoName);
+    async updatePartialDataAsync(id, partialObjectData, repoName) {
+        return new Promise((resolve, reject) => {
+            const repo = this.connection.getRepository(repoName);
 
-        repo.findByIds([id])
-            .then(res => {
-                if (res.length <= 0) return callback(undefined);
-                // Results after this.
+            repo.findByIds([id])
+                .then(res => {
+                    // Resolve undefined if no documents found
+                    if (res.length <= 0) return resolve(undefined);
 
-                repo.update(id, partialObjectData)
-                    .then(res => {
-                        return callback(res);
-                    })
-                    .catch(err => {
-                        console.err(err);
-                        return callback(undefined);
-                    });
-            })
-            .catch(err => {
-                console.error(err);
-                return callback(undefined);
-            });
+                    repo.update(id, partialObjectData)
+                        .then(res => {
+                            return resolve(res);
+                        })
+                        .catch(err => {
+                            console.log(err);
+                            return reject(undefined);
+                        });
+                })
+                .catch(err => {
+                    console.log(err);
+                    return reject(undefined);
+                });
+        });
     }
 
     /**
@@ -307,7 +338,7 @@ export default class ConnectionInfo {
      * @param ids
      * @param repoName The name of the table.
      */
-    fetchByIdsAsync(ids, repoName) {
+    async fetchByIdsAsync(ids, repoName) {
         return new Promise((resolve, reject) => {
             const repo = this.connection.getRepository(repoName);
             let idRef = ids;
@@ -359,7 +390,7 @@ export default class ConnectionInfo {
      * @param ids Can be array or single id.
      * @param repoName The name of the table.
      */
-    deleteByIdsAsync(ids, repoName) {
+    async deleteByIdsAsync(ids, repoName) {
         return new Promise((resolve, reject) => {
             const repo = this.connection.getRepository(repoName);
 
@@ -403,7 +434,7 @@ export default class ConnectionInfo {
      * Fetch all documents by repo name.
      * @param repoName The name of the table.
      */
-    fetchAllDataAsync(repoName) {
+    async fetchAllDataAsync(repoName) {
         return new Promise((resolve, reject) => {
             const repo = this.connection.getRepository(repoName);
 
